@@ -186,6 +186,13 @@ def ReadCAN():
                     listreadcan1.delete(0, END)
                 listreadcan1.insert("end", mstr)
                 listreadcan1.see(listreadcan1.size())
+
+                if rec[0].ID == int('0288F03F', 16):
+                    read_v = rec[0].data[0] * 16777216 + rec[0].data[1] * 65536 + rec[0].data[2] * 256 + rec[0].data[3]
+                    read_i = rec[0].data[4] * 16777216 + rec[0].data[5] * 65536 + rec[0].data[6] * 256 + rec[0].data[7]
+                    lb_v.configure(text='实时输出电流：%.3f V' % (read_v/1000))
+                    lb_i.configure(text='实时输出电压：%.3f A' % (read_i/1000))
+
             len2, rec2, ret2 = ecan.Receivce(USBCAN2, DevIndex, Channel2, 1)
             if (len2 > 0 and ret2 == 1):
                 mstr = "Rec: " + str(rec_CAN2)
@@ -613,9 +620,9 @@ def polling_v_i():
 
 
 # 输出电压电流显示label
-lb_v = Label(root, text="输出电压:", bd=3, font=("Arial", 12), width=10)
+lb_v = Label(root, text="实时输出电压:", bd=3, font=("Arial", 12), width=20)
 lb_v.grid(row=10, column=3, padx=0, pady=5, sticky='w')
-lb_i = Label(root, text="输出电流:", bd=3, font=("Arial", 12), width=10)
+lb_i = Label(root, text="实时输出电流:", bd=3, font=("Arial", 12), width=20)
 lb_i.grid(row=11, column=3, padx=0, pady=5, sticky='w')
 
 # 电压电流设置
@@ -629,7 +636,7 @@ e_v.grid(row=10, column=1, padx=0, pady=5, sticky='w')
 Data_i = StringVar()
 e_i = Entry(root, textvariable=Data_i, width=10, bd=3, font=("Arial", 12))
 e_i.grid(row=11, column=1, padx=0, pady=5, sticky='w')
-bt_set = Button(root, text='设置', font=("Arial", 12),state='disabled', command=set_v_i)
+bt_set = Button(root, text='设置', font=("Arial", 12), state='disabled', command=set_v_i)
 bt_set.grid(row=10, column=2, padx=0, pady=1, rowspan=2, sticky='w')
 
 # 开机
