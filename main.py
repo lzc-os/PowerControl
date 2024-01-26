@@ -4,11 +4,11 @@ import sys
 import threading
 import tkinter.messagebox
 from tkinter.tix import *
-import tkinter.ttk
+from tkinter.ttk import *
 from ctypes import *
 from tkinter import *
 from tkinter import ttk
-from time import sleep
+
 
 DevType = c_uint
 
@@ -268,12 +268,9 @@ def caninit():
         btreadinfo.configure(state='normal')
         bt_send_CAN1.configure(state='normal')
         bt_send_CAN2.configure(state='normal')
-        bt_set.configure(state='normal')
         t = threading.Timer(0.03, ReadCAN)
         t.start()
     else:
-        power_off()
-        sleep(1)
         musbcanopen = False
         ecan.CloseDevice(USBCAN2, DevIndex)
         btopen.configure(text="打开CAN分析仪")
@@ -281,9 +278,6 @@ def caninit():
         btreadinfo.configure(state='disabled')
         bt_send_CAN1.configure(state='disabled')
         bt_send_CAN2.configure(state='disabled')
-        bt_set.configure(state='disabled')
-        bt_on.configure(state='disabled')
-        bt_off.configure(state='disabled')
 
 
 '''
@@ -474,9 +468,9 @@ lb1 = Label(root, text="CAN1波特率:", bd=3, font=("Arial", 12))
 lb1.grid(row=1, column=0, padx=1, pady=1, sticky='w')
 lb2 = Label(root, text="CAN2波特率:", bd=3, font=("Arial", 12))
 lb2.grid(row=2, column=0, padx=1, pady=1, sticky='w')
-lbsn = Label(root, text="SN:", bd=3, font=("Arial", 12), width=15)
-lbsn.grid(row=2, column=3, padx=0, pady=5, sticky='w')
-tabcontrol = ttk.Notebook(root)
+lbsn = Label(root, text="SN:", bd=3, font=("Arial", 15), width=15)
+lbsn.grid(row=1, column=3, padx=0, pady=5, sticky='w', rowspan=2)
+tabcontrol = ttk.Notebook(root, height=600, width=1066)
 tab1 = ttk.Frame(tabcontrol)
 tab2 = ttk.Frame(tabcontrol)
 tab3 = ttk.Frame(tabcontrol)
@@ -491,7 +485,7 @@ baudvaluecan2.set("125k")
 baudvalues = ["1M", "800k", "666k", "500k", "400k", "250k", "200k", "125k", "100k", "80k", "50k"]
 can1com = tkinter.ttk.Combobox(master=root, state="readonly", font=("Arial", 12), textvariable=baudvaluecan1,
                                values=baudvalues, width=10)
-can1com.grid(row=1, column=1, padx=1, pady=1, sticky='nw')
+can1com.grid(row=1, column=1, padx=1, pady=1, sticky='w')
 can2com = tkinter.ttk.Combobox(master=root, state="readonly", font=("Arial", 12), textvariable=baudvaluecan2,
                                values=baudvalues, width=10)
 can2com.grid(row=2, column=1, padx=1, pady=1, sticky='w')
@@ -517,7 +511,7 @@ ct_Length_CAN1 = Control(tab1, label='Length(0-8):', integer=True, max=8, min=0,
 ct_Length_CAN1.grid(row=0, column=7, columnspan=4, sticky='w')
 s1 = Scrollbar(tab1, orient=VERTICAL)
 s1.grid(row=2, column=11, sticky='ns')
-listreadcan1 = Listbox(tab1, font=("Arial", 12), height=20, width=90, yscrollcommand=s1.set)
+listreadcan1 = Listbox(tab1, font=("Arial", 12), height=28, width=107, yscrollcommand=s1.set)
 listreadcan1.grid(row=2, column=0, columnspan=11, sticky='nw')
 s1.config(command=listreadcan1.yview)
 
@@ -577,7 +571,7 @@ ct_Length_CAN2 = Control(tab2, label='Length(0-8):', integer=True, max=8, min=0,
 ct_Length_CAN2.grid(row=0, column=7, columnspan=4, sticky='w')
 s2 = Scrollbar(tab2, orient=VERTICAL)
 s2.grid(row=2, column=11, sticky='ns')
-listreadcan2 = Listbox(tab2, font=("Arial", 12), height=20, width=90, yscrollcommand=s2.set)
+listreadcan2 = Listbox(tab2, font=("Arial", 12), height=28, width=107, yscrollcommand=s2.set)
 listreadcan2.grid(row=2, column=0, columnspan=11, sticky='nw')
 s2.config(command=listreadcan2.yview)
 lb_Data_CAN2 = Label(tab2, text="Data(Hex)", bd=3, font=("Arial", 12))
@@ -620,31 +614,202 @@ bt_clear_CAN2 = Button(tab2, text='清空', font=("Arial", 12), bd=3, command=cl
 bt_clear_CAN2.grid(row=2, column=12, padx=2, pady=1)
 
 # tab3 PowerControl
-# 输出电压电流显示label
-lb_v = Label(root, text="实时输出电压:", bd=3, font=("Arial", 12), width=20)
-lb_v.grid(row=10, column=3, padx=0, pady=5, sticky='w')
-lb_i = Label(root, text="实时输出电流:", bd=3, font=("Arial", 12), width=20)
-lb_i.grid(row=11, column=3, padx=0, pady=5, sticky='w')
+lb_add = Label(tab3, text="地址方式：", bd=3, font=("Arial", 12))
+lb_add.grid(row=1, column=1, pady=5, sticky='w')
+addstr = StringVar()
+addstr.set("自动设址")
+addcom = tkinter.ttk.Combobox(master=tab3, state="readonly", font=("Arial", 12), textvariable=addstr, values=["自动设址", "拨码设址"], width=7)
+addcom.grid(row=1, column=2, pady=5)
 
-# 电压电流设置
-lb3 = Label(root, text="设置电压(mV):", bd=3, font=("Arial", 12))
-lb3.grid(row=10, column=0, padx=1, pady=5, sticky='w')
-lb4 = Label(root, text="设置电流(mA):", bd=3, font=("Arial", 12))
-lb4.grid(row=11, column=0, padx=1, pady=5, sticky='w')
-Data_v = StringVar()
-e_v = Entry(root, textvariable=Data_v, width=10, bd=3, font=("Arial", 12))
-e_v.grid(row=10, column=1, padx=0, pady=5, sticky='w')
-Data_i = StringVar()
-e_i = Entry(root, textvariable=Data_i, width=10, bd=3, font=("Arial", 12))
-e_i.grid(row=11, column=1, padx=0, pady=5, sticky='w')
-bt_set = Button(root, text='设置', font=("Arial", 12), state='disabled', command=set_v_i)
-bt_set.grid(row=10, column=2, padx=0, pady=1, rowspan=2, sticky='w')
+lb_module = Label(tab3, text="模块地址：", bd=3, font=("Arial", 12))
+lb_module.grid(row=1, column=3, pady=5, padx=(75, 0), sticky='w')
+modulenumber = StringVar()
+modulenumber.set("0")
+modulevalues = [str(x) for x in range(0, 60)]
+modulecom = tkinter.ttk.Combobox(master=tab3, state="readonly", font=("Arial", 12), textvariable=modulenumber, values=modulevalues, width=2)
+modulecom.grid(row=1, column=4, pady=5)
 
-# 开机
-bt_on = Button(root, text='电源开机', state='disabled', font=("Arial", 12), command=power_on)
-bt_on.grid(row=1, column=4, padx=0, pady=1, sticky='e')
-bt_off = Button(root, text='电源关机', state='disabled', font=("Arial", 12), command=power_off)
-bt_off.grid(row=2, column=4, padx=0, pady=1, sticky='e')
+lb_group = Label(tab3, text="模块设组：", bd=3, font=("Arial", 12))
+lb_group.grid(row=1, column=5, pady=5, padx=(75, 0), sticky='w')
+groupnumber = StringVar()
+e_group = Entry(tab3, textvariable=groupnumber, width=5, bd=3, font=("Arial", 12))
+e_group.grid(row=1, column=6, pady=5)
+bt_group = Button(tab3, text="设组", font=("Arial", 12))
+bt_group.grid(row=1, column=7, pady=5)
+
+bt_m_on = Button(tab3, text="模块开机", font=("Arial", 12))
+bt_m_on.grid(row=1, column=8, pady=5, padx=(85, 5))
+bt_m_sleep = Button(tab3, text="模块休眠", font=("Arial", 12))
+bt_m_sleep.grid(row=1, column=9, pady=5, padx=5)
+bt_m_off = Button(tab3, text="模块关机", font=("Arial", 12))
+bt_m_off.grid(row=1, column=10, pady=5, sticky='e', padx=5)
+
+lb_m_v = Label(tab3, text="模块电压(v)：0.000", bd=3, font=("Arial", 20), width=20)
+lb_m_v.grid(row=3, column=1, columnspan=3, pady=20)
+lb_m_i = Label(tab3, text="模块电流(A)：0.000", bd=3, font=("Arial", 20), width=20)
+lb_m_i.grid(row=3, column=4, columnspan=3, pady=20)
+
+lb_m_temp = Label(tab3, text="模块温度(°C)：0", bd=3, font=("Arial", 15))
+lb_m_temp.grid(row=3, column=7, pady=20, columnspan=2)
+lb_m_dispgroup = Label(tab3, text="模块组号：0", bd=3, font=("Arial", 15))
+lb_m_dispgroup.grid(row=3, column=9, pady=20, columnspan=2)
+
+lb_m_acinput = Label(tab3, text="交流输入(V)：0.0", bd=3, font=("Arial", 17))
+lb_m_acinput.grid(row=2, column=1, pady=10, columnspan=2, sticky='w')
+
+lb_m_dc_vmax = Label(tab3, text="Vmax(V)：0", bd=3, font=("Arial", 12))
+lb_m_dc_vmax.grid(row=2, column=3, pady=10, columnspan=2, sticky='w', padx=(80, 0))
+lb_m_dc_vmin = Label(tab3, text="Vmin(V)：0", bd=3, font=("Arial", 12))
+lb_m_dc_vmin.grid(row=2, column=4, pady=10, columnspan=2, sticky='w', padx=(80, 0))
+lb_m_dc_imax = Label(tab3, text="Imax(A)：0.0", bd=3, font=("Arial", 12))
+lb_m_dc_imax.grid(row=2, column=7, pady=10, columnspan=2, sticky='w')
+lb_m_powerlimit = Label(tab3, text="Pmax(KW)：0", bd=3, font=("Arial", 12))
+lb_m_powerlimit.grid(row=2, column=9, pady=10, columnspan=2, sticky='w')
+
+spet1 = Separator(tab3, orient=HORIZONTAL)
+spet1.grid(row=4, column=1, columnspan=10, sticky='ew')
+
+lb_state_1_1 = Label(tab3, text="异常放电", bd=3, font=("Arial", 15))
+lb_state_1_1.grid(row=5, column=1, pady=5, columnspan=2, sticky='w')
+lb_state_2_1 = Label(tab3, text="休眠", bd=3, font=("Arial", 15))
+lb_state_2_1.grid(row=6, column=1, pady=5, columnspan=2, sticky='w')
+lb_state_3_1 = Label(tab3, text="输入|出母线异常", bd=3, font=("Arial", 15))
+lb_state_3_1.grid(row=7, column=1, pady=5, columnspan=2, sticky='w')
+lb_state_4_1 = Label(tab3, text="内部通信故障", bd=3, font=("Arial", 15))
+lb_state_4_1.grid(row=8, column=1, pady=5, columnspan=2, sticky='w')
+lb_state_5_1 = Label(tab3, text="输出短路", bd=3, font=("Arial", 15))
+lb_state_5_1.grid(row=9, column=1, pady=5, columnspan=2, sticky='w')
+
+lb_sel_1_1 = Label(tab3, width=2, bd=3, font=("Arial", 15), bg='green')
+lb_sel_1_1.grid(row=5, column=1, pady=5, columnspan=2, sticky='e')
+lb_sel_2_1 = Label(tab3, width=2, bd=3, font=("Arial", 15), bg='green')
+lb_sel_2_1.grid(row=6, column=1, pady=5, columnspan=2, sticky='e')
+lb_sel_3_1 = Label(tab3, width=2, bd=3, font=("Arial", 15), bg='green')
+lb_sel_3_1.grid(row=7, column=1, pady=5, columnspan=2, sticky='e')
+lb_sel_4_1 = Label(tab3, width=2, bd=3, font=("Arial", 15), bg='green')
+lb_sel_4_1.grid(row=8, column=1, pady=5, columnspan=2, sticky='e')
+lb_sel_5_1 = Label(tab3, width=2, bd=3, font=("Arial", 15), bg='green')
+lb_sel_5_1.grid(row=9, column=1, pady=5, columnspan=2, sticky='e')
+
+lb_state_1_2 = Label(tab3, text="通信中断警告", bd=3, font=("Arial", 15))
+lb_state_1_2.grid(row=5, column=3, pady=5, columnspan=2, sticky='w', padx=(50, 0))
+lb_state_2_2 = Label(tab3, text="WALK-IN使能", bd=3, font=("Arial", 15))
+lb_state_2_2.grid(row=6, column=3, pady=5, columnspan=2, sticky='w', padx=(50, 0))
+lb_state_3_2 = Label(tab3, text="输出过压警告", bd=3, font=("Arial", 15))
+lb_state_3_2.grid(row=7, column=3, pady=5, columnspan=2, sticky='w', padx=(50, 0))
+lb_state_4_2 = Label(tab3, text="过温警告", bd=3, font=("Arial", 15))
+lb_state_4_2.grid(row=8, column=3, pady=5, columnspan=2, sticky='w', padx=(50, 0))
+lb_state_5_2 = Label(tab3, text="风扇故障警告", bd=3, font=("Arial", 15))
+lb_state_5_2.grid(row=9, column=3, pady=5, columnspan=2, sticky='w', padx=(50, 0))
+lb_state_6_2 = Label(tab3, text="模块保护警告", bd=3, font=("Arial", 15))
+lb_state_6_2.grid(row=10, column=3, pady=5, columnspan=2, sticky='w', padx=(50, 0))
+lb_state_7_2 = Label(tab3, text="模块故障警告", bd=3, font=("Arial", 15))
+lb_state_7_2.grid(row=11, column=3, pady=5, columnspan=2, sticky='w', padx=(50, 0))
+lb_state_8_2 = Label(tab3, text="DC侧关机", bd=3, font=("Arial", 15))
+lb_state_8_2.grid(row=12, column=3, pady=5, columnspan=2, sticky='w', padx=(50, 0))
+
+lb_sel_1_2 = Label(tab3, width=2, bd=3, font=("Arial", 15), bg='green')
+lb_sel_1_2.grid(row=5, column=3, pady=5, columnspan=2, sticky='e')
+lb_sel_2_2 = Label(tab3, width=2, bd=3, font=("Arial", 15), bg='green')
+lb_sel_2_2.grid(row=6, column=3, pady=5, columnspan=2, sticky='e')
+lb_sel_3_2 = Label(tab3, width=2, bd=3, font=("Arial", 15), bg='green')
+lb_sel_3_2.grid(row=7, column=3, pady=5, columnspan=2, sticky='e')
+lb_sel_4_2 = Label(tab3, width=2, bd=3, font=("Arial", 15), bg='green')
+lb_sel_4_2.grid(row=8, column=3, pady=5, columnspan=2, sticky='e')
+lb_sel_5_2 = Label(tab3, width=2, bd=3, font=("Arial", 15), bg='green')
+lb_sel_5_2.grid(row=9, column=3, pady=5, columnspan=2, sticky='e')
+lb_sel_6_2 = Label(tab3, width=2, bd=3, font=("Arial", 15), bg='green')
+lb_sel_6_2.grid(row=10, column=3, pady=5, columnspan=2, sticky='e')
+lb_sel_7_2 = Label(tab3, width=2, bd=3, font=("Arial", 15), bg='green')
+lb_sel_7_2.grid(row=11, column=3, pady=5, columnspan=2, sticky='e')
+lb_sel_8_2 = Label(tab3, width=2, bd=3, font=("Arial", 15), bg='green')
+lb_sel_8_2.grid(row=12, column=3, pady=5, columnspan=2, sticky='e')
+
+lb_state_1_3 = Label(tab3, text="PFC侧关机", bd=3, font=("Arial", 15))
+lb_state_1_3.grid(row=5, column=5, pady=5, columnspan=2, sticky='w', padx=(60, 0))
+lb_state_2_3 = Label(tab3, text="输入过压警告", bd=3, font=("Arial", 15))
+lb_state_2_3.grid(row=6, column=5, pady=5, columnspan=2, sticky='w', padx=(60, 0))
+lb_state_3_3 = Label(tab3, text="输入欠压警告", bd=3, font=("Arial", 15))
+lb_state_3_3.grid(row=7, column=5, pady=5, columnspan=2, sticky='w', padx=(60, 0))
+lb_state_4_3 = Label(tab3, text="三相输入不平衡", bd=3, font=("Arial", 15))
+lb_state_4_3.grid(row=8, column=5, pady=5, columnspan=2, sticky='w', padx=(60, 0))
+lb_state_5_3 = Label(tab3, text="三相输入缺相", bd=3, font=("Arial", 15))
+lb_state_5_3.grid(row=9, column=5, pady=5, columnspan=2, sticky='w', padx=(60, 0))
+lb_state_6_3 = Label(tab3, text="模块不均流严重", bd=3, font=("Arial", 15))
+lb_state_6_3.grid(row=10, column=5, pady=5, columnspan=2, sticky='w', padx=(60, 0))
+lb_state_7_3 = Label(tab3, text="模块ID重复", bd=3, font=("Arial", 15))
+lb_state_7_3.grid(row=11, column=5, pady=5, columnspan=2, sticky='w', padx=(60, 0))
+lb_state_8_3 = Label(tab3, text="限功率状态", bd=3, font=("Arial", 15))
+lb_state_8_3.grid(row=12, column=5, pady=5, columnspan=2, sticky='w', padx=(60, 0))
+
+lb_sel_1_3 = Label(tab3, width=2, bd=3, font=("Arial", 15), bg='green')
+lb_sel_1_3.grid(row=5, column=5, pady=5, columnspan=2, sticky='e')
+lb_sel_2_3 = Label(tab3, width=2, bd=3, font=("Arial", 15), bg='green')
+lb_sel_2_3.grid(row=6, column=5, pady=5, columnspan=2, sticky='e')
+lb_sel_3_3 = Label(tab3, width=2, bd=3, font=("Arial", 15), bg='green')
+lb_sel_3_3.grid(row=7, column=5, pady=5, columnspan=2, sticky='e')
+lb_sel_4_3 = Label(tab3, width=2, bd=3, font=("Arial", 15), bg='green')
+lb_sel_4_3.grid(row=8, column=5, pady=5, columnspan=2, sticky='e')
+lb_sel_5_3 = Label(tab3, width=2, bd=3, font=("Arial", 15), bg='green')
+lb_sel_5_3.grid(row=9, column=5, pady=5, columnspan=2, sticky='e')
+lb_sel_6_3 = Label(tab3, width=2, bd=3, font=("Arial", 15), bg='green')
+lb_sel_6_3.grid(row=10, column=5, pady=5, columnspan=2, sticky='e')
+lb_sel_7_3 = Label(tab3, width=2, bd=3, font=("Arial", 15), bg='green')
+lb_sel_7_3.grid(row=11, column=5, pady=5, columnspan=2, sticky='e')
+lb_sel_8_3 = Label(tab3, width=2, bd=3, font=("Arial", 15), bg='green')
+lb_sel_8_3.grid(row=12, column=5, pady=5, columnspan=2, sticky='e')
+
+spet2 = Separator(tab3, orient="vertical")
+spet2.grid(row=4, column=7, rowspan=10, sticky='nse')
+
+lb_m_set_v_i = Label(tab3, text="设置模块输出电流电压", bd=3, font=("Arial", 15))
+lb_m_set_v_i.grid(row=5, column=8, pady=5, columnspan=3)
+lb_m_set_v = Label(tab3, text="输出电压(V)：", bd=3, font=("Arial", 15))
+lb_m_set_v.grid(row=6, column=8, pady=5)
+lb_m_set_i = Label(tab3, text="输出电流(A)：", bd=3, font=("Arial", 15))
+lb_m_set_i.grid(row=7, column=8, pady=5)
+
+set_v = StringVar()
+e_set_v = Entry(tab3, textvariable=set_v, width=8, bd=3, font=("Arial", 15))
+e_set_v.grid(row=6, column=8, pady=5, columnspan=2, sticky='e')
+set_i = StringVar()
+e_set_i = Entry(tab3, textvariable=set_i, width=8, bd=3, font=("Arial", 15))
+e_set_i.grid(row=7, column=8, pady=5, columnspan=2, sticky='e')
+
+bt_m_set_v_i = Button(tab3, text="设", bd=3, font=("Arial", 20))
+bt_m_set_v_i.grid(row=6, column=10, pady=5, rowspan=2)
+
+spet3 = Separator(tab3, orient=HORIZONTAL)
+spet3.grid(row=8, column=8, columnspan=3, sticky='ew')
+
+lb_m_limit = Label(tab3, text="软件端限流限压保护", bd=3, font=("Arial", 15))
+lb_m_limit.grid(row=9, column=8, pady=5, columnspan=3)
+lb_m_set_vlimit = Label(tab3, text="限制电压(V)：", bd=3, font=("Arial", 15))
+lb_m_set_vlimit.grid(row=10, column=8, pady=5)
+lb_m_set_ilimit = Label(tab3, text="限制电流(A)：", bd=3, font=("Arial", 15))
+lb_m_set_ilimit.grid(row=11, column=8, pady=5)
+set_vlimit = StringVar()
+e_set_vlimit = Entry(tab3, textvariable=set_vlimit, width=12, bd=3, font=("Arial", 15))
+e_set_vlimit.grid(row=10, column=9, pady=5, columnspan=2)
+set_ilimit = StringVar()
+e_set_ilimit = Entry(tab3, textvariable=set_ilimit, width=12, bd=3, font=("Arial", 15))
+e_set_ilimit.grid(row=11, column=9, pady=5, columnspan=2)
+bt_m_limit_flag = Button(tab3, text="限流限压使能", bd=3, font=("Arial", 15))
+bt_m_limit_flag.grid(row=12, column=8, pady=5, columnspan=2)
+lb_m_limit_state = Label(tab3, bd=3, font=("Arial", 15), bg="gray", width=2)
+lb_m_limit_state.grid(row=12, column=10, pady=5, stick='w')
+
+spet4 = Separator(tab3, orient=HORIZONTAL)
+spet4.grid(row=13, column=1, columnspan=10, sticky='esw')
+
+lb_m_user = Label(tab3, text="其他功能", bd=3, font=("Arial", 12))
+lb_m_user.grid(row=13, column=1, rowspan=2)
+
+bt_m_led = Button(tab3, text="绿灯闪烁", font=("Arial", 18))
+bt_m_led.grid(row=15, column=1, columnspan=2)
+bt_m_walkin = Button(tab3, text="walk-in", font=("Arial", 18))
+bt_m_walkin.grid(row=15, column=3, columnspan=2)
+
 
 '''
 窗口保持
