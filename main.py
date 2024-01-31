@@ -149,6 +149,7 @@ root.title("PowerControl")
 # root.geometry("800x1000")
 root.resizable(width=False, height=False)
 root.tk.eval('package require Tix')
+root.iconphoto(True, tkinter.PhotoImage(file='power.png'))
 musbcanopen = False
 rec_CAN1 = 1
 rec_CAN2 = 1
