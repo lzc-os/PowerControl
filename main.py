@@ -8,6 +8,7 @@ from tkinter.ttk import *
 from ctypes import *
 from tkinter import *
 from tkinter import ttk
+import winsound
 
 DevType = c_uint
 
@@ -157,7 +158,7 @@ rec_CAN2 = 1
 
 
 def ReadCAN():
-    global musbcanopen, rec_CAN1, rec_CAN2
+    global musbcanopen, rec_CAN1, rec_CAN2, flag_limit
     if musbcanopen:
         scount = 0
         while (scount < 50):
@@ -191,6 +192,13 @@ def ReadCAN():
                     read_i = rec[0].data[4] * 16777216 + rec[0].data[5] * 65536 + rec[0].data[6] * 256 + rec[0].data[7]
                     lb_m_v.configure(text='模块电压(V)：%.3f' % (read_v / 1000))
                     lb_m_i.configure(text='模块电流(A)：%.3f' % (read_i / 1000))
+                    if flag_limit:
+                        if (read_v / 1000 > float(set_vlimit.get())) or (read_i / 1000 > float(set_ilimit.get())):
+                            power_off()
+                            winsound.Beep(440, 1000)
+                            power_conn()
+                            tkinter.messagebox.showinfo("WARN", "电压或电流超出自定义限制，已关闭电源输出")
+
 
                 if rec[0].ID == int('0286F000', 16) + int(modulenumber.get()):
                     read_ac = rec[0].data[0] * 256 + rec[0].data[1]
@@ -621,6 +629,19 @@ def set_group():
     ecan.Tramsmit(USBCAN2, DevIndex, Channel1, canobj)
 
 
+flag_limit = 0
+
+
+def soft_v_i():
+    global flag_limit
+    if flag_limit:
+        flag_limit = 0
+        lb_m_limit_state.configure(bg="gray")
+    else:
+        flag_limit = 1
+        lb_m_limit_state.configure(bg="green")
+
+
 lb1 = Label(root, text="CAN1波特率:", bd=3, font=("Arial", 12))
 lb1.grid(row=1, column=0, padx=1, pady=1, sticky='w')
 lb2 = Label(root, text="CAN2波特率:", bd=3, font=("Arial", 12))
@@ -964,7 +985,7 @@ e_set_vlimit.grid(row=10, column=9, pady=5, columnspan=2)
 set_ilimit = StringVar()
 e_set_ilimit = Entry(tab3, textvariable=set_ilimit, width=12, bd=3, font=("Arial", 15))
 e_set_ilimit.grid(row=11, column=9, pady=5, columnspan=2)
-bt_m_limit_flag = Button(tab3, text="限流限压使能", bd=3, font=("Arial", 15))
+bt_m_limit_flag = Button(tab3, text="限流限压使能", bd=3, font=("Arial", 15), command=soft_v_i)
 bt_m_limit_flag.grid(row=12, column=8, pady=5, columnspan=2)
 lb_m_limit_state = Label(tab3, bd=3, font=("Arial", 15), bg="gray", width=2)
 lb_m_limit_state.grid(row=12, column=10, pady=5, stick='w')
